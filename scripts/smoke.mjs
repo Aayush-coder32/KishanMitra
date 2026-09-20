@@ -1,21 +1,120 @@
-import assert from 'node:assert/strict';
-const base=process.env.TEST_API_URL||'http://localhost:4000/api';
-const config=await fetch(`${base}/config`).then(r=>r.json());assert.ok(config.demo,'Run smoke tests against a demo instance only.');
-const jars={};async function request(role,path,{method='GET',body,status=200}={}){const res=await fetch(base+path,{method,headers:{'Content-Type':'application/json','X-Requested-With':'e-kharid',...(jars[role]?{Cookie:jars[role]}:{})},body:body?JSON.stringify(body):undefined});const cookies=res.headers.getSetCookie();if(cookies.length)jars[role]=cookies.map(c=>c.split(';')[0]).join('; ');const data=await res.json();assert.equal(res.status,status,`${method} ${path}: ${JSON.stringify(data)}`);return data;}
-for(const a of config.demoAccounts)await request(a.role,'/auth/login',{method:'POST',body:{login:a.email,password:a.password,role:a.role}});
-await request('anonymous','/dashboard',{status:401});await request('farmer','/government/audit-logs',{status:403});await request('state','/district/farmers',{status:403});
-const rows=await request('farmer','/farmer/slots');for(const r of rows.filter(r=>r.status==='WAITING'))await request('farmer',`/farmer/slots/${r._id}`,{method:'DELETE'});
-const date=new Date(Date.now()+86400000).toISOString().slice(0,10);const slot=await request('farmer','/farmer/slot',{method:'POST',body:{centreId:'centre-0',date,timeSlot:'09:00',crop:'Wheat',quantity:12},status:201});
-await request('farmer','/farmer/slot',{method:'POST',body:{centreId:'centre-0',date,timeSlot:'11:00',crop:'Wheat',quantity:12},status:409});
-await request('state',`/official/slots/${slot._id}`,{method:'PATCH',body:{status:'CALLED'},status:403});
-await request('district',`/official/slots/${slot._id}`,{method:'PATCH',body:{status:'WEIGHING'},status:409});
-for(const status of ['CALLED','IN-PROCESS','VERIFICATION','WEIGHING','QUALITY CHECK','COMPLETED'])await request('district',`/official/slots/${slot._id}`,{method:'PATCH',body:{status,quantity:11.5,quality:'A'}});
-const payments=await request('farmer','/farmer/payment'),payment=payments.at(-1);assert.equal(payment.amount,27887.5);
-await request('district',`/official/payments/${payment._id}`,{method:'PATCH',body:{status:'COMPLETED',transactionId:'INVALID'},status:409});
-await request('district',`/official/payments/${payment._id}`,{method:'PATCH',body:{status:'PROCESSING'}});
-await request('district',`/official/payments/${payment._id}`,{method:'PATCH',body:{status:'COMPLETED'},status:400});
-await request('district',`/official/payments/${payment._id}`,{method:'PATCH',body:{status:'COMPLETED',transactionId:`DEMO-${Date.now()}`}});
-assert.equal((await request('farmer','/farmer/payment')).at(-1).status,'COMPLETED');
-const audit=await request('government','/government/audit-logs');assert.ok(audit.some(a=>a.action==='Payment status: COMPLETED'));
-await request('farmer','/auth/refresh',{method:'POST'});await request('farmer','/auth/me');await request('farmer','/auth/logout',{method:'POST'});await request('farmer','/auth/me',{status:401});
-console.log('PASS: four role logins, unauthorized access, booking, duplicate prevention, stage ordering, procurement, payment validation, audit, refresh and logout.');
+import assert from "node:assert/strict";
+const base = process.env.TEST_API_URL || "http://localhost:4000/api";
+const config = await fetch(`${base}/config`).then((r) => r.json());
+assert.ok(config.demo, "Run smoke tests against a demo instance only.");
+const jars = {};
+async function request(
+  role,
+  path,
+  { method = "GET", body, status = 200 } = {},
+) {
+  const res = await fetch(base + path, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      "X-Requested-With": "e-kharid",
+      ...(jars[role] ? { Cookie: jars[role] } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const cookies = res.headers.getSetCookie();
+  if (cookies.length)
+    jars[role] = cookies.map((c) => c.split(";")[0]).join("; ");
+  const data = await res.json();
+  assert.equal(
+    res.status,
+    status,
+    `${method} ${path}: ${JSON.stringify(data)}`,
+  );
+  return data;
+}
+for (const a of config.demoAccounts)
+  await request(a.role, "/auth/login", {
+    method: "POST",
+    body: { login: a.email, password: a.password, role: a.role },
+  });
+await request("anonymous", "/dashboard", { status: 401 });
+await request("farmer", "/government/audit-logs", { status: 403 });
+await request("state", "/district/farmers", { status: 403 });
+const rows = await request("farmer", "/farmer/slots");
+for (const r of rows.filter((r) => r.status === "WAITING"))
+  await request("farmer", `/farmer/slots/${r._id}`, { method: "DELETE" });
+const date = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+const slot = await request("farmer", "/farmer/slot", {
+  method: "POST",
+  body: {
+    centreId: "centre-0",
+    date,
+    timeSlot: "09:00",
+    crop: "Wheat",
+    quantity: 12,
+  },
+  status: 201,
+});
+await request("farmer", "/farmer/slot", {
+  method: "POST",
+  body: {
+    centreId: "centre-0",
+    date,
+    timeSlot: "11:00",
+    crop: "Wheat",
+    quantity: 12,
+  },
+  status: 409,
+});
+await request("state", `/official/slots/${slot._id}`, {
+  method: "PATCH",
+  body: { status: "CALLED" },
+  status: 403,
+});
+await request("district", `/official/slots/${slot._id}`, {
+  method: "PATCH",
+  body: { status: "WEIGHING" },
+  status: 409,
+});
+for (const status of [
+  "CALLED",
+  "IN-PROCESS",
+  "VERIFICATION",
+  "WEIGHING",
+  "QUALITY CHECK",
+  "COMPLETED",
+])
+  await request("district", `/official/slots/${slot._id}`, {
+    method: "PATCH",
+    body: { status, quantity: 11.5, quality: "A" },
+  });
+const payments = await request("farmer", "/farmer/payment"),
+  payment = payments.at(-1);
+assert.equal(payment.amount, 27887.5);
+await request("district", `/official/payments/${payment._id}`, {
+  method: "PATCH",
+  body: { status: "COMPLETED", transactionId: "INVALID" },
+  status: 409,
+});
+await request("district", `/official/payments/${payment._id}`, {
+  method: "PATCH",
+  body: { status: "PROCESSING" },
+});
+await request("district", `/official/payments/${payment._id}`, {
+  method: "PATCH",
+  body: { status: "COMPLETED" },
+  status: 400,
+});
+await request("district", `/official/payments/${payment._id}`, {
+  method: "PATCH",
+  body: { status: "COMPLETED", transactionId: `DEMO-${Date.now()}` },
+});
+assert.equal(
+  (await request("farmer", "/farmer/payment")).at(-1).status,
+  "COMPLETED",
+);
+const audit = await request("government", "/government/audit-logs");
+assert.ok(audit.some((a) => a.action === "Payment status: COMPLETED"));
+await request("farmer", "/auth/refresh", { method: "POST" });
+await request("farmer", "/auth/me");
+await request("farmer", "/auth/logout", { method: "POST" });
+await request("farmer", "/auth/me", { status: 401 });
+console.log(
+  "PASS: four role logins, unauthorized access, booking, duplicate prevention, stage ordering, procurement, payment validation, audit, refresh and logout.",
+);

@@ -1,5 +1,334 @@
-import {Link} from 'react-router-dom';
-import {Sprout,ArrowRight,CalendarDays,Clock3,Bell,ShieldCheck,Wallet,FileCheck,ChartNoAxesCombined,MapPin,Check,Menu,Wheat,Smartphone} from 'lucide-react';
-import {useState} from 'react';
-export function Brand(){return <Link className="brand" to="/"><span className="brand-icon"><Sprout size={27}/></span><span>e-Kharid<small>DIGITAL PROCUREMENT FOR FARMERS</small></span></Link>;}
-export default function Landing(){const [menu,setMenu]=useState(false);const features=[[ShieldCheck,'Simple registration','One secure identity for your entire procurement journey.'],[CalendarDays,'Your time. Your slot.','Choose a nearby centre and a time that works for you.'],[Clock3,'A queue you can see','Follow your token and know when it is your turn.'],[Wallet,'Payments, made clear','Track every payment from initiation to completion.'],[Bell,'Stay a step ahead','Booking, queue and procurement updates in one place.'],[FileCheck,'Documents, digitised','Keep verification documents securely in one place.'],[Wheat,'Track your harvest','Follow weighing, quality checks and procurement.'],[ChartNoAxesCombined,'Better visibility','Connected monitoring for district and state officials.']];return <><div className="gov-strip"><span>भारत सरकार <i/> Government of India</span><span>Ministry of Consumer Affairs, Food & Public Distribution</span></div><header className="landing-header"><Brand/><nav className={menu?'open':''}><a href="#about">About the platform</a><a href="#features">Features</a><a href="#how">How it works</a><a href="#contact">Contact</a></nav><div className="header-actions"><Link to="/login" className="text-button">Login</Link><Link to="/register" className="button small">Create account <ArrowRight size={16}/></Link><button className="mobile-toggle icon-button" aria-label="Toggle menu" onClick={()=>setMenu(!menu)}><Menu/></button></div></header><main><section className="hero"><div className="hero-copy"><div className="eyebrow"><span/> A BETTER WAY TO BRING YOUR HARVEST HOME</div><h1>Your hard work.<br/>A <em>simpler</em> journey<br/>to procurement.</h1><p>e-Kharid connects farmers to a smarter procurement experience. Book your slot, skip the uncertainty, and follow your payment—all in one place.</p><div className="hero-actions"><Link className="button" to="/register">Register as a farmer <ArrowRight size={18}/></Link><Link className="button secondary" to="/login">Farmer login</Link></div><div className="hero-trust"><span><ShieldCheck size={17}/> Secure & transparent</span><span><Check size={17}/> Built for farmers</span></div></div><div className="hero-art"><img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=85" alt="Sunlight over green agricultural fields"/><div className="photo-shade"/><span className="image-label"><MapPin size={15}/> Rooted in agriculture. Powered by technology.</span><div className="harvest-label"><Wheat size={32}/><span>A stronger tomorrow<br/><strong>starts with our farmers.</strong></span></div><div className="floating-token"><span className="check-circle"><Check size={22}/></span><div><strong>A little planning. A lot less waiting.</strong><p>Your centre. Your slot. Your peace of mind.</p></div></div></div></section><div className="benefit-strip"><div><CalendarDays/><span><strong>Plan your visit</strong><small>Convenient online slot booking</small></span></div><div><Clock3/><span><strong>Know your turn</strong><small>Live queue & token tracking</small></span></div><div><Wallet/><span><strong>Track your payment</strong><small>Clear status at every stage</small></span></div><div><ShieldCheck/><span><strong>Stay in control</strong><small>Secure digital records</small></span></div></div><section className="section" id="features"><div className="section-top"><div><div className="eyebrow">FROM YOUR FARM TO THE PROCUREMENT CENTRE</div><h2>Less paperwork.<br/>More peace of mind.</h2></div><p>Everything you need for a smooth procurement journey, designed to keep you informed at every step.</p></div><div className="features-grid">{features.map(([Icon,title,desc])=><article key={title}><span className="feature-icon"><Icon size={23}/></span><h3>{title}</h3><p>{desc}</p></article>)}</div></section><section className="how-section" id="how"><div className="eyebrow">A SIMPLE JOURNEY, START TO FINISH</div><h2>Five steps. One connected platform.</h2><div className="steps">{['Create your account','Choose your centre','Book a time slot','Track your turn','Procurement & payment'].map((s,i)=><div key={s}><span>{String(i+1).padStart(2,'0')}</span><h3>{s}</h3><p>{['Register and securely verify your details.','Find a procurement centre near your farm.','Pick an available date and get your token.','Arrive informed with live queue updates.','Follow your crop and payment status.'][i]}</p></div>)}</div></section><section className="section about-section" id="about"><div><div className="eyebrow">SMART PROCUREMENT. STRONGER COMMUNITIES.</div><h2>Goodbye uncertainty.<br/>Hello, e-Kharid.</h2><p>Long queues, unclear schedules and manual records make procurement harder than it needs to be. e-Kharid brings farmers and officials together through shared, timely information.</p><a href="#how" className="text-link">Discover how it works <ArrowRight size={17}/></a></div><div className="solution-box"><Sprout size={35}/><h3>A clearer path from harvest to payment</h3>{['Online registration and digital verification','Capacity-aware booking and live queues','Transparent procurement and payment records','Connected district, state and national monitoring'].map(t=><p key={t}><Check size={17}/>{t}</p>)}</div></section><section className="cta-section"><div><span>YOUR NEXT HARVEST, BETTER CONNECTED</span><h2>Let’s make procurement simpler.</h2><p>Start your digital journey with e-Kharid today.</p></div><Link className="button light" to="/register">Create your free account <ArrowRight size={18}/></Link></section></main><footer id="contact"><div><Brand/><p>Smart digital procurement for a stronger tomorrow.</p><small>SIH26032 · Smart India Hackathon demonstration</small></div><div><strong>Explore</strong><a href="#features">Platform features</a><a href="#how">How it works</a><Link to="/login">Official login</Link></div><div><strong>Need a hand?</strong><p>Contact your district procurement office<br/>for registration and procurement support.</p><Link to="/privacy">Privacy & data protection</Link></div><div className="footer-bottom">© {new Date().getFullYear()} e-Kharid. A hackathon prototype; not an official government service.<span>Designed with farmers at heart <Sprout size={15}/></span></div></footer></>;}
+import { Link } from "react-router-dom";
+import {
+  Sprout,
+  ArrowRight,
+  CalendarDays,
+  Clock3,
+  Bell,
+  ShieldCheck,
+  Wallet,
+  FileCheck,
+  ChartNoAxesCombined,
+  MapPin,
+  Check,
+  Menu,
+  Wheat,
+  Smartphone,
+} from "lucide-react";
+import { useState } from "react";
+export function Brand() {
+  return (
+    <Link className="brand" to="/">
+      <span className="brand-icon">
+        <Sprout size={27} />
+      </span>
+      <span>
+        e-Kharid<small>DIGITAL PROCUREMENT FOR FARMERS</small>
+      </span>
+    </Link>
+  );
+}
+export default function Landing() {
+  const [menu, setMenu] = useState(false);
+  const features = [
+    [
+      ShieldCheck,
+      "Simple registration",
+      "One secure identity for your entire procurement journey.",
+    ],
+    [
+      CalendarDays,
+      "Your time. Your slot.",
+      "Choose a nearby centre and a time that works for you.",
+    ],
+    [
+      Clock3,
+      "A queue you can see",
+      "Follow your token and know when it is your turn.",
+    ],
+    [
+      Wallet,
+      "Payments, made clear",
+      "Track every payment from initiation to completion.",
+    ],
+    [
+      Bell,
+      "Stay a step ahead",
+      "Booking, queue and procurement updates in one place.",
+    ],
+    [
+      FileCheck,
+      "Documents, digitised",
+      "Keep verification documents securely in one place.",
+    ],
+    [
+      Wheat,
+      "Track your harvest",
+      "Follow weighing, quality checks and procurement.",
+    ],
+    [
+      ChartNoAxesCombined,
+      "Better visibility",
+      "Connected monitoring for district and state officials.",
+    ],
+  ];
+  return (
+    <>
+      <div className="gov-strip">
+        <span>
+          भारत सरकार <i /> Government of India
+        </span>
+        <span>Ministry of Consumer Affairs, Food & Public Distribution</span>
+      </div>
+      <header className="landing-header">
+        <Brand />
+        <nav className={menu ? "open" : ""}>
+          <a href="#about">About the platform</a>
+          <a href="#features">Features</a>
+          <a href="#how">How it works</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <div className="header-actions">
+          <Link to="/login" className="text-button">
+            Login
+          </Link>
+          <Link to="/register" className="button small">
+            Create account <ArrowRight size={16} />
+          </Link>
+          <button
+            className="mobile-toggle icon-button"
+            aria-label="Toggle menu"
+            onClick={() => setMenu(!menu)}
+          >
+            <Menu />
+          </button>
+        </div>
+      </header>
+      <main>
+        <section className="hero">
+          <div className="hero-copy">
+            <div className="eyebrow">
+              <span /> A BETTER WAY TO BRING YOUR HARVEST HOME
+            </div>
+            <h1>
+              Your hard work.
+              <br />A <em>simpler</em> journey
+              <br />
+              to procurement.
+            </h1>
+            <p>
+              e-Kharid connects farmers to a smarter procurement experience.
+              Book your slot, skip the uncertainty, and follow your payment—all
+              in one place.
+            </p>
+            <div className="hero-actions">
+              <Link className="button" to="/register">
+                Register as a farmer <ArrowRight size={18} />
+              </Link>
+              <Link className="button secondary" to="/login">
+                Farmer login
+              </Link>
+            </div>
+            <div className="hero-trust">
+              <span>
+                <ShieldCheck size={17} /> Secure & transparent
+              </span>
+              <span>
+                <Check size={17} /> Built for farmers
+              </span>
+            </div>
+          </div>
+          <div className="hero-art">
+            <img
+              src="/harvest-fields.jpg"
+              alt="Sunlight over green agricultural fields"
+            />
+            <div className="photo-shade" />
+            <span className="image-label">
+              <MapPin size={15} /> Rooted in agriculture. Powered by technology.
+            </span>
+            <div className="harvest-label">
+              <Wheat size={32} />
+              <span>
+                A stronger tomorrow
+                <br />
+                <strong>starts with our farmers.</strong>
+              </span>
+            </div>
+            <div className="floating-token">
+              <span className="check-circle">
+                <Check size={22} />
+              </span>
+              <div>
+                <strong>A little planning. A lot less waiting.</strong>
+                <p>Your centre. Your slot. Your peace of mind.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+        <div className="benefit-strip">
+          <div>
+            <CalendarDays />
+            <span>
+              <strong>Plan your visit</strong>
+              <small>Convenient online slot booking</small>
+            </span>
+          </div>
+          <div>
+            <Clock3 />
+            <span>
+              <strong>Know your turn</strong>
+              <small>Live queue & token tracking</small>
+            </span>
+          </div>
+          <div>
+            <Wallet />
+            <span>
+              <strong>Track your payment</strong>
+              <small>Clear status at every stage</small>
+            </span>
+          </div>
+          <div>
+            <ShieldCheck />
+            <span>
+              <strong>Stay in control</strong>
+              <small>Secure digital records</small>
+            </span>
+          </div>
+        </div>
+        <section className="section" id="features">
+          <div className="section-top">
+            <div>
+              <div className="eyebrow">
+                FROM YOUR FARM TO THE PROCUREMENT CENTRE
+              </div>
+              <h2>
+                Less paperwork.
+                <br />
+                More peace of mind.
+              </h2>
+            </div>
+            <p>
+              Everything you need for a smooth procurement journey, designed to
+              keep you informed at every step.
+            </p>
+          </div>
+          <div className="features-grid">
+            {features.map(([Icon, title, desc]) => (
+              <article key={title}>
+                <span className="feature-icon">
+                  <Icon size={23} />
+                </span>
+                <h3>{title}</h3>
+                <p>{desc}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+        <section className="how-section" id="how">
+          <div className="eyebrow">A SIMPLE JOURNEY, START TO FINISH</div>
+          <h2>Five steps. One connected platform.</h2>
+          <div className="steps">
+            {[
+              "Create your account",
+              "Choose your centre",
+              "Book a time slot",
+              "Track your turn",
+              "Procurement & payment",
+            ].map((s, i) => (
+              <div key={s}>
+                <span>{String(i + 1).padStart(2, "0")}</span>
+                <h3>{s}</h3>
+                <p>
+                  {
+                    [
+                      "Register and securely verify your details.",
+                      "Find a procurement centre near your farm.",
+                      "Pick an available date and get your token.",
+                      "Arrive informed with live queue updates.",
+                      "Follow your crop and payment status.",
+                    ][i]
+                  }
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+        <section className="section about-section" id="about">
+          <div>
+            <div className="eyebrow">
+              SMART PROCUREMENT. STRONGER COMMUNITIES.
+            </div>
+            <h2>
+              Goodbye uncertainty.
+              <br />
+              Hello, e-Kharid.
+            </h2>
+            <p>
+              Long queues, unclear schedules and manual records make procurement
+              harder than it needs to be. e-Kharid brings farmers and officials
+              together through shared, timely information.
+            </p>
+            <a href="#how" className="text-link">
+              Discover how it works <ArrowRight size={17} />
+            </a>
+          </div>
+          <div className="solution-box">
+            <Sprout size={35} />
+            <h3>A clearer path from harvest to payment</h3>
+            {[
+              "Online registration and digital verification",
+              "Capacity-aware booking and live queues",
+              "Transparent procurement and payment records",
+              "Connected district, state and national monitoring",
+            ].map((t) => (
+              <p key={t}>
+                <Check size={17} />
+                {t}
+              </p>
+            ))}
+          </div>
+        </section>
+        <section className="cta-section">
+          <div>
+            <span>YOUR NEXT HARVEST, BETTER CONNECTED</span>
+            <h2>Let’s make procurement simpler.</h2>
+            <p>Start your digital journey with e-Kharid today.</p>
+          </div>
+          <Link className="button light" to="/register">
+            Create your free account <ArrowRight size={18} />
+          </Link>
+        </section>
+      </main>
+      <footer id="contact">
+        <div>
+          <Brand />
+          <p>Smart digital procurement for a stronger tomorrow.</p>
+          <small>SIH26032 · Smart India Hackathon demonstration</small>
+        </div>
+        <div>
+          <strong>Explore</strong>
+          <a href="#features">Platform features</a>
+          <a href="#how">How it works</a>
+          <Link to="/login">Official login</Link>
+        </div>
+        <div>
+          <strong>Need a hand?</strong>
+          <p>
+            Contact your district procurement office
+            <br />
+            for registration and procurement support.
+          </p>
+          <Link to="/privacy">Privacy & data protection</Link>
+        </div>
+        <div className="footer-bottom">
+          © {new Date().getFullYear()} e-Kharid. A hackathon prototype; not an
+          official government service.
+          <span>
+            Designed with farmers at heart <Sprout size={15} />
+          </span>
+        </div>
+      </footer>
+    </>
+  );
+}

@@ -1,0 +1,20 @@
+{
+  "states": [{ "_id": "up", "name": "Uttar Pradesh" }],
+  "districts": [
+    { "_id": "lucknow", "name": "Lucknow", "state": "Uttar Pradesh" }
+  ],
+  "crops": [{ "_id": "wheat", "name": "Wheat", "price": 2425 }],
+  "procurementCentres": [
+    {
+      "_id": "lucknow-central",
+      "name": "Lucknow Central Mandi",
+      "district": "Lucknow",
+      "state": "Uttar Pradesh",
+      "address": "Hardoi Road, Lucknow",
+      "capacity": 12,
+      "status": "Normal",
+      "latitude": 26.85,
+      "longitude": 80.94
+    }
+  ]
+}

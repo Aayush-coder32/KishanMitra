@@ -1,10 +1,504 @@
-import {useState} from 'react';
-import {Link,useNavigate} from 'react-router-dom';
-import {ArrowLeft,ArrowRight,ShieldCheck,Check,Eye,EyeOff} from 'lucide-react';
-import {Brand} from './Landing';
-import {Field} from '../components/UI';
-import {api,errorMessage} from '../services/api';
-export function Login({onLogin,config}){const [role,setRole]=useState('farmer'),[error,setError]=useState(''),[busy,setBusy]=useState(false),[show,setShow]=useState(false);const nav=useNavigate();async function submit(e){e.preventDefault();setBusy(true);setError('');const form=new FormData(e.target);try{const {data}=await api.post('/auth/login',{login:form.get('login'),password:form.get('password'),remember:form.get('remember')==='on',role});onLogin(data);nav('/app');}catch(e){setError(errorMessage(e));}finally{setBusy(false);}}return <AuthFrame><div className="eyebrow">WELCOME BACK</div><h1>Your harvest.<br/>Your workspace.</h1><p className="muted">Sign in to continue your procurement journey.</p><div className="role-tabs">{['farmer','district','state','government'].map(r=><button key={r} onClick={()=>{setRole(r);setError('');}} className={role===r?'active':''}>{r}</button>)}</div><form onSubmit={submit} key={role}><Field label="Email or mobile number" name="login" required autoComplete="username" defaultValue={config?.demo?`${role}@demo.ekharid.in`:''}/><div className="password-field"><Field label="Password" name="password" type={show?'text':'password'} required autoComplete="current-password" defaultValue={config?.demoAccounts?.[0]?.password||''}/><button type="button" aria-label="Toggle password visibility" onClick={()=>setShow(!show)}>{show?<EyeOff size={18}/>:<Eye size={18}/>}</button></div><div className="form-between"><label><input type="checkbox" name="remember"/> Remember me</label><Link to="/forgot-password">Forgot password?</Link></div>{error&&<div className="error" role="alert">{error}</div>}<button className="button full" disabled={busy}>{busy?'Signing in…':`Sign in as ${role}`}<ArrowRight size={17}/></button></form>{config?.demo&&<div className="demo-note"><ShieldCheck size={20}/><span><strong>Explore the live demo</strong><br/>Demo credentials are prefilled for each role. Use synthetic data only.</span></div>}<p className="auth-bottom">New to e-Kharid? <Link to="/register">Create a farmer account</Link></p></AuthFrame>;}
-function AuthFrame({children}){return <div className="auth-page"><aside><Brand/><div><div className="eyebrow">ROOTED IN TRUST</div><h2>A stronger future,<br/>one harvest<br/>at a time.</h2><p>Less waiting. Clearer information.<br/>A procurement journey built around you.</p><div className="auth-quote"><ShieldCheck/><span>Secure registration<br/>Transparent procurement<br/>Connected communities</span></div></div><small>e-Kharid · Smart India Hackathon 2026</small></aside><main><Link className="back-link" to="/"><ArrowLeft size={16}/> Back to home</Link><div className="auth-form">{children}</div></main></div>;}
-export function Register({onLogin}){const [step,setStep]=useState(0),[values,setValues]=useState({state:'Uttar Pradesh',district:'Lucknow',gender:'Male',crop:'Wheat',quantity:10}),[error,setError]=useState(''),[busy,setBusy]=useState(false),[challenge,setChallenge]=useState(null),[files,setFiles]=useState({});const nav=useNavigate();const titles=['Basic information','Identity information','Personal details','Your documents','Farm details','Verify & finish'];const fields=[[['Full name','name'],['Mobile number','mobile','tel'],['Email address','email','email'],['Password (at least 10 characters)','password','password'],['Confirm password','confirm','password']],[['Aadhaar number','aadhaar'],['PAN number','pan']],[['Date of birth','dob','date'],['Gender','gender','select',['Male','Female','Other','Prefer not to say']],['Address','address'],['Village','village'],['District','district'],['State','state'],['PIN code','pin']],[],[['Land / registration number','land'],['Crop','crop','select',['Wheat','Paddy','Maize','Mustard']],['Expected quantity (quintals)','quantity','number']]];function update(k,v){setValues(s=>({...s,[k]:v}));}async function submit(e){e.preventDefault();setError('');if(step===0&&values.password!==values.confirm)return setError('Passwords do not match.');if(step<5){setStep(step+1);return;}setBusy(true);try{if(!challenge){const {data}=await api.post('/auth/register',{...values,consent:values.consent===true});setChallenge(data);}else{const {data}=await api.post('/auth/verify-otp',{challengeId:challenge.challengeId,code:values.code});onLogin(data);const failures=[];for(const [type,file]of Object.entries(files)){const form=new FormData();form.append('type',type);form.append('file',file);try{await api.post('/documents',form);}catch{failures.push(type);}}nav(failures.length?'/app/documents':'/app',{state:failures.length?{message:`Please upload again: ${failures.join(', ')}`}:{}});}}catch(e){setError(errorMessage(e));}finally{setBusy(false);}}return <AuthFrame><div className="eyebrow">JOIN E-KHARID</div><h1>A simpler journey<br/>starts here.</h1><div className="registration-progress">{titles.map((t,i)=><span key={t} className={i<=step?'active':''} title={t}/>)}</div><div className="form-between"><h3>{titles[step]}</h3><small>Step {step+1} of 6</small></div><form onSubmit={submit}>{fields[step]?.map(([label,key,type='text',options])=><Field key={key} label={label}>{type==='select'?<select value={values[key]||''} onChange={e=>update(key,e.target.value)}>{options.map(o=><option key={o}>{o}</option>)}</select>:<input type={type} required value={values[key]||''} minLength={key==='password'?10:undefined} pattern={key==='mobile'?'[6-9][0-9]{9}':key==='aadhaar'?'[0-9]{12}':key==='pan'?'[A-Z]{5}[0-9]{4}[A-Z]':key==='pin'?'[0-9]{6}':undefined} min={type==='number'?0.01:undefined} step={type==='number'?'0.01':undefined} onChange={e=>update(key,e.target.value)}/>}</Field>)}{step===1&&<div className="demo-note"><ShieldCheck size={20}/>Identity details are encrypted at rest and masked when displayed. Use synthetic details in demo mode.</div>}{step===3&&<><p className="muted">PDF, JPEG or PNG · Up to 5 MB each. Files are securely uploaded after verification.</p>{['Profile Photo','Aadhaar Document','PAN Document','Signature'].map(type=><Field key={type} label={type}><input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e=>{const f=e.target.files[0];if(f?.size>5242880){setError('Each file must be under 5 MB.');e.target.value='';return;}setFiles(v=>({...v,[type]:f}));}}/></Field>)}<small>You may also upload documents from your dashboard.</small></>}{step===4&&<p className="demo-note">Your farmer ID is generated automatically. Select your procurement centre when booking a slot. Payment tracking does not require collecting bank details here.</p>}{step===5&&!challenge&&<><div className="review-box"><strong>{values.name}</strong><p>{values.email} · {values.mobile}</p><p>{values.village}, {values.district}, {values.state}</p><p>{values.crop} · {values.quantity} quintals</p></div><label className="consent"><input type="checkbox" required checked={!!values.consent} onChange={e=>update('consent',e.target.checked)}/>I agree to the <Link to="/privacy" target="_blank">terms and privacy notice</Link> and consent to processing my information for procurement.</label></>}{challenge&&<><p>Enter the six-digit code sent to your email address.</p>{challenge.demoCode&&<p className="demo-note">Demo verification code: <strong>{challenge.demoCode}</strong></p>}<Field label="Verification code" value={values.code||''} onChange={e=>update('code',e.target.value)} required pattern="[0-9]{6}" inputMode="numeric"/></>}{error&&<div className="error" role="alert">{error}</div>}<div className="form-actions">{step>0&&!challenge&&<button type="button" className="button secondary" onClick={()=>setStep(step-1)}>Back</button>}<button disabled={busy} className="button">{busy?'Please wait…':step<5?'Continue':challenge?'Verify & create account':'Send verification code'}<ArrowRight size={16}/></button></div></form><p className="auth-bottom">Already registered? <Link to="/login">Sign in</Link></p></AuthFrame>;}
-export function Forgot(){const [challenge,setChallenge]=useState(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);async function submit(e){e.preventDefault();setBusy(true);const data=Object.fromEntries(new FormData(e.target));try{if(!challenge){const {data:d}=await api.post('/auth/forgot-password',data);setChallenge(d);setMessage(d.message);}else{await api.post('/auth/reset-password',{...data,challengeId:challenge.challengeId});setMessage('Password updated. You can now sign in.');setChallenge(null);}}catch(e){setMessage(errorMessage(e));}finally{setBusy(false);}}return <AuthFrame><h1>Reset your password.</h1><p>{message||'We will send a verification code to your registered email.'}</p><form onSubmit={submit}>{challenge?<><Field label="Verification code" name="code" required/>{challenge.demoCode&&<p className="demo-note">Demo code: {challenge.demoCode}</p>}<Field label="New password" name="password" type="password" minLength={10} required/></>:<Field label="Email address" name="email" type="email" required/>}<button className="button full" disabled={busy}>{busy?'Please wait…':challenge?'Reset password':'Send code'}</button></form><Link to="/login" className="back-link">Return to login</Link></AuthFrame>;}
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  ArrowRight,
+  ShieldCheck,
+  Check,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { Brand } from "./Landing";
+import { Field } from "../components/UI";
+import { api, errorMessage } from "../services/api";
+export function Login({ onLogin, config }) {
+  const [role, setRole] = useState("farmer"),
+    [error, setError] = useState(""),
+    [busy, setBusy] = useState(false),
+    [show, setShow] = useState(false);
+  const nav = useNavigate();
+  async function submit(e) {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
+    const form = new FormData(e.target);
+    try {
+      const { data } = await api.post("/auth/login", {
+        login: form.get("login"),
+        password: form.get("password"),
+        remember: form.get("remember") === "on",
+        role,
+      });
+      onLogin(data);
+      nav("/app");
+    } catch (e) {
+      setError(errorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <AuthFrame>
+      <div className="eyebrow">WELCOME BACK</div>
+      <h1>
+        Your harvest.
+        <br />
+        Your workspace.
+      </h1>
+      <p className="muted">Sign in to continue your procurement journey.</p>
+      <div className="role-tabs">
+        {["farmer", "district", "state", "government"].map((r) => (
+          <button
+            key={r}
+            onClick={() => {
+              setRole(r);
+              setError("");
+            }}
+            className={role === r ? "active" : ""}
+          >
+            {r}
+          </button>
+        ))}
+      </div>
+      <form onSubmit={submit} key={role}>
+        <Field
+          label="Email or mobile number"
+          name="login"
+          required
+          autoComplete="username"
+          defaultValue={config?.demo ? `${role}@demo.ekharid.in` : ""}
+        />
+        <div className="password-field">
+          <Field
+            label="Password"
+            name="password"
+            type={show ? "text" : "password"}
+            required
+            autoComplete="current-password"
+            defaultValue={config?.demoAccounts?.[0]?.password || ""}
+          />
+          <button
+            type="button"
+            aria-label="Toggle password visibility"
+            onClick={() => setShow(!show)}
+          >
+            {show ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
+        <div className="form-between">
+          <label>
+            <input type="checkbox" name="remember" /> Remember me
+          </label>
+          <Link to="/forgot-password">Forgot password?</Link>
+        </div>
+        {error && (
+          <div className="error" role="alert">
+            {error}
+          </div>
+        )}
+        <button className="button full" disabled={busy}>
+          {busy ? "Signing in…" : `Sign in as ${role}`}
+          <ArrowRight size={17} />
+        </button>
+      </form>
+      {config?.demo && (
+        <div className="demo-note">
+          <ShieldCheck size={20} />
+          <span>
+            <strong>Explore the live demo</strong>
+            <br />
+            Demo credentials are prefilled for each role. Use synthetic data
+            only.
+          </span>
+        </div>
+      )}
+      <p className="auth-bottom">
+        New to e-Kharid? <Link to="/register">Create a farmer account</Link>
+      </p>
+    </AuthFrame>
+  );
+}
+function AuthFrame({ children }) {
+  return (
+    <div className="auth-page">
+      <aside>
+        <Brand />
+        <div>
+          <div className="eyebrow">ROOTED IN TRUST</div>
+          <h2>
+            A stronger future,
+            <br />
+            one harvest
+            <br />
+            at a time.
+          </h2>
+          <p>
+            Less waiting. Clearer information.
+            <br />A procurement journey built around you.
+          </p>
+          <div className="auth-quote">
+            <ShieldCheck />
+            <span>
+              Secure registration
+              <br />
+              Transparent procurement
+              <br />
+              Connected communities
+            </span>
+          </div>
+        </div>
+        <small>e-Kharid · Smart India Hackathon 2026</small>
+      </aside>
+      <main>
+        <Link className="back-link" to="/">
+          <ArrowLeft size={16} /> Back to home
+        </Link>
+        <div className="auth-form">{children}</div>
+      </main>
+    </div>
+  );
+}
+export function Register({ onLogin }) {
+  const [step, setStep] = useState(0),
+    [values, setValues] = useState({
+      state: "Uttar Pradesh",
+      district: "Lucknow",
+      gender: "Male",
+      crop: "Wheat",
+      quantity: 10,
+    }),
+    [error, setError] = useState(""),
+    [busy, setBusy] = useState(false),
+    [challenge, setChallenge] = useState(null),
+    [files, setFiles] = useState({});
+  const nav = useNavigate();
+  const titles = [
+    "Basic information",
+    "Identity information",
+    "Personal details",
+    "Your documents",
+    "Farm details",
+    "Verify & finish",
+  ];
+  const fields = [
+    [
+      ["Full name", "name"],
+      ["Mobile number", "mobile", "tel"],
+      ["Email address", "email", "email"],
+      ["Password (at least 10 characters)", "password", "password"],
+      ["Confirm password", "confirm", "password"],
+    ],
+    [
+      ["Aadhaar number", "aadhaar"],
+      ["PAN number", "pan"],
+    ],
+    [
+      ["Date of birth", "dob", "date"],
+      [
+        "Gender",
+        "gender",
+        "select",
+        ["Male", "Female", "Other", "Prefer not to say"],
+      ],
+      ["Address", "address"],
+      ["Village", "village"],
+      ["District", "district"],
+      ["State", "state"],
+      ["PIN code", "pin"],
+    ],
+    [],
+    [
+      ["Land / registration number", "land"],
+      ["Crop", "crop", "select", ["Wheat", "Paddy", "Maize", "Mustard"]],
+      ["Expected quantity (quintals)", "quantity", "number"],
+    ],
+  ];
+  function update(k, v) {
+    setValues((s) => ({ ...s, [k]: v }));
+  }
+  async function submit(e) {
+    e.preventDefault();
+    setError("");
+    if (step === 0 && values.password !== values.confirm)
+      return setError("Passwords do not match.");
+    if (step < 5) {
+      setStep(step + 1);
+      return;
+    }
+    setBusy(true);
+    try {
+      if (!challenge) {
+        const { data } = await api.post("/auth/register", {
+          ...values,
+          consent: values.consent === true,
+        });
+        setChallenge(data);
+      } else {
+        const { data } = await api.post("/auth/verify-otp", {
+          challengeId: challenge.challengeId,
+          code: values.code,
+        });
+        onLogin(data);
+        const failures = [];
+        for (const [type, file] of Object.entries(files)) {
+          const form = new FormData();
+          form.append("type", type);
+          form.append("file", file);
+          try {
+            await api.post("/documents", form);
+          } catch {
+            failures.push(type);
+          }
+        }
+        nav(failures.length ? "/app/documents" : "/app", {
+          state: failures.length
+            ? { message: `Please upload again: ${failures.join(", ")}` }
+            : {},
+        });
+      }
+    } catch (e) {
+      setError(errorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <AuthFrame>
+      <div className="eyebrow">JOIN E-KHARID</div>
+      <h1>
+        A simpler journey
+        <br />
+        starts here.
+      </h1>
+      <div className="registration-progress">
+        {titles.map((t, i) => (
+          <span key={t} className={i <= step ? "active" : ""} title={t} />
+        ))}
+      </div>
+      <div className="form-between">
+        <h3>{titles[step]}</h3>
+        <small>Step {step + 1} of 6</small>
+      </div>
+      <form onSubmit={submit}>
+        {fields[step]?.map(([label, key, type = "text", options]) => (
+          <Field key={key} label={label}>
+            {type === "select" ? (
+              <select
+                value={values[key] || ""}
+                onChange={(e) => update(key, e.target.value)}
+              >
+                {options.map((o) => (
+                  <option key={o}>{o}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type={type}
+                required
+                value={values[key] || ""}
+                minLength={key === "password" ? 10 : undefined}
+                pattern={
+                  key === "mobile"
+                    ? "[6-9][0-9]{9}"
+                    : key === "aadhaar"
+                      ? "[0-9]{12}"
+                      : key === "pan"
+                        ? "[A-Z]{5}[0-9]{4}[A-Z]"
+                        : key === "pin"
+                          ? "[0-9]{6}"
+                          : undefined
+                }
+                min={type === "number" ? 0.01 : undefined}
+                step={type === "number" ? "0.01" : undefined}
+                onChange={(e) => update(key, e.target.value)}
+              />
+            )}
+          </Field>
+        ))}
+        {step === 1 && (
+          <div className="demo-note">
+            <ShieldCheck size={20} />
+            Identity details are encrypted at rest and masked when displayed.
+            Use synthetic details in demo mode.
+          </div>
+        )}
+        {step === 3 && (
+          <>
+            <p className="muted">
+              PDF, JPEG or PNG · Up to 5 MB each. Files are securely uploaded
+              after verification.
+            </p>
+            {[
+              "Profile Photo",
+              "Aadhaar Document",
+              "PAN Document",
+              "Signature",
+            ].map((type) => (
+              <Field key={type} label={type}>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={(e) => {
+                    const f = e.target.files[0];
+                    if (f?.size > 5242880) {
+                      setError("Each file must be under 5 MB.");
+                      e.target.value = "";
+                      return;
+                    }
+                    setFiles((v) => ({ ...v, [type]: f }));
+                  }}
+                />
+              </Field>
+            ))}
+            <small>You may also upload documents from your dashboard.</small>
+          </>
+        )}
+        {step === 4 && (
+          <p className="demo-note">
+            Your farmer ID is generated automatically. Select your procurement
+            centre when booking a slot. Payment tracking does not require
+            collecting bank details here.
+          </p>
+        )}
+        {step === 5 && !challenge && (
+          <>
+            <div className="review-box">
+              <strong>{values.name}</strong>
+              <p>
+                {values.email} · {values.mobile}
+              </p>
+              <p>
+                {values.village}, {values.district}, {values.state}
+              </p>
+              <p>
+                {values.crop} · {values.quantity} quintals
+              </p>
+            </div>
+            <label className="consent">
+              <input
+                type="checkbox"
+                required
+                checked={!!values.consent}
+                onChange={(e) => update("consent", e.target.checked)}
+              />
+              I agree to the{" "}
+              <Link to="/privacy" target="_blank">
+                terms and privacy notice
+              </Link>{" "}
+              and consent to processing my information for procurement.
+            </label>
+          </>
+        )}
+        {challenge && (
+          <>
+            <p>Enter the six-digit code sent to your email address.</p>
+            {challenge.demoCode && (
+              <p className="demo-note">
+                Demo verification code: <strong>{challenge.demoCode}</strong>
+              </p>
+            )}
+            <Field
+              label="Verification code"
+              value={values.code || ""}
+              onChange={(e) => update("code", e.target.value)}
+              required
+              pattern="[0-9]{6}"
+              inputMode="numeric"
+            />
+          </>
+        )}
+        {error && (
+          <div className="error" role="alert">
+            {error}
+          </div>
+        )}
+        <div className="form-actions">
+          {step > 0 && !challenge && (
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => setStep(step - 1)}
+            >
+              Back
+            </button>
+          )}
+          <button disabled={busy} className="button">
+            {busy
+              ? "Please wait…"
+              : step < 5
+                ? "Continue"
+                : challenge
+                  ? "Verify & create account"
+                  : "Send verification code"}
+            <ArrowRight size={16} />
+          </button>
+        </div>
+      </form>
+      <p className="auth-bottom">
+        Already registered? <Link to="/login">Sign in</Link>
+      </p>
+    </AuthFrame>
+  );
+}
+export function Forgot() {
+  const [challenge, setChallenge] = useState(null),
+    [message, setMessage] = useState(""),
+    [busy, setBusy] = useState(false);
+  async function submit(e) {
+    e.preventDefault();
+    setBusy(true);
+    const data = Object.fromEntries(new FormData(e.target));
+    try {
+      if (!challenge) {
+        const { data: d } = await api.post("/auth/forgot-password", data);
+        setChallenge(d);
+        setMessage(d.message);
+      } else {
+        await api.post("/auth/reset-password", {
+          ...data,
+          challengeId: challenge.challengeId,
+        });
+        setMessage("Password updated. You can now sign in.");
+        setChallenge(null);
+      }
+    } catch (e) {
+      setMessage(errorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <AuthFrame>
+      <h1>Reset your password.</h1>
+      <p>
+        {message ||
+          "We will send a verification code to your registered email."}
+      </p>
+      <form onSubmit={submit}>
+        {challenge ? (
+          <>
+            <Field label="Verification code" name="code" required />
+            {challenge.demoCode && (
+              <p className="demo-note">Demo code: {challenge.demoCode}</p>
+            )}
+            <Field
+              label="New password"
+              name="password"
+              type="password"
+              minLength={10}
+              required
+            />
+          </>
+        ) : (
+          <Field label="Email address" name="email" type="email" required />
+        )}
+        <button className="button full" disabled={busy}>
+          {busy ? "Please wait…" : challenge ? "Reset password" : "Send code"}
+        </button>
+      </form>
+      <Link to="/login" className="back-link">
+        Return to login
+      </Link>
+    </AuthFrame>
+  );
+}

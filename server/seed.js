@@ -1,3 +1,83 @@
-import bcrypt from 'bcryptjs';
-import {id,mutate} from './store.js';
-export async function seed(password){await mutate(db=>{if(db.users.length)return;for(const [i,role] of ['farmer','district','state','government'].entries())db.users.push({_id:id(),name:['Rajesh Kumar','Anita Sharma','Vikram Singh','Meera Iyer'][i],email:`${role}@demo.ekharid.in`,mobile:`900000000${i}`,passwordHash:bcrypt.hashSync(password,12),role,state:'Uttar Pradesh',district:'Lucknow',status:'ACTIVE',createdAt:new Date().toISOString()});db.states.push({_id:'up',name:'Uttar Pradesh'},{_id:'mp',name:'Madhya Pradesh'},{_id:'hr',name:'Haryana'});db.districts.push({_id:'lko',name:'Lucknow',state:'Uttar Pradesh'},{_id:'sit',name:'Sitapur',state:'Uttar Pradesh'});db.procurementCentres.push(...['Lucknow Central Mandi','Mohanlalganj Procurement Centre','Malihabad Grain Market','Sitapur Central Mandi'].map((name,i)=>({_id:`centre-${i}`,name,district:i===3?'Sitapur':'Lucknow',state:'Uttar Pradesh',capacity:12,status:'Normal',address:['Hardoi Road, Lucknow','Mohanlalganj, Lucknow','Malihabad, Lucknow','Station Road, Sitapur'][i],latitude:26.85+i*.06,longitude:80.94-i*.08})));db.crops.push(...['Wheat','Paddy','Maize','Mustard'].map((name,i)=>({_id:name,name,price:[2425,2369,2225,5950][i]})));const farmer=db.users[0];db.farmers.push({_id:id(),userId:farmer._id,farmerId:'EK-UP-10001',village:'Malihabad',district:farmer.district,state:farmer.state,verificationStatus:'VERIFIED'});db.notifications.push({_id:id(),farmerId:farmer._id,title:'Welcome to e-Kharid',message:'Your digital procurement journey starts here. Book your first slot at a nearby centre.',createdAt:new Date().toISOString(),read:false});});}
+import bcrypt from "bcryptjs";
+import { id, mutate } from "./store.js";
+export async function seed(password) {
+  await mutate((db) => {
+    if (db.users.length) return;
+    for (const [i, role] of [
+      "farmer",
+      "district",
+      "state",
+      "government",
+    ].entries())
+      db.users.push({
+        _id: id(),
+        name: ["Rajesh Kumar", "Anita Sharma", "Vikram Singh", "Meera Iyer"][i],
+        email: `${role}@demo.ekharid.in`,
+        mobile: `900000000${i}`,
+        passwordHash: bcrypt.hashSync(password, 12),
+        role,
+        state: "Uttar Pradesh",
+        district: "Lucknow",
+        status: "ACTIVE",
+        createdAt: new Date().toISOString(),
+      });
+    db.states.push(
+      { _id: "up", name: "Uttar Pradesh" },
+      { _id: "mp", name: "Madhya Pradesh" },
+      { _id: "hr", name: "Haryana" },
+    );
+    db.districts.push(
+      { _id: "lko", name: "Lucknow", state: "Uttar Pradesh" },
+      { _id: "sit", name: "Sitapur", state: "Uttar Pradesh" },
+    );
+    db.procurementCentres.push(
+      ...[
+        "Lucknow Central Mandi",
+        "Mohanlalganj Procurement Centre",
+        "Malihabad Grain Market",
+        "Sitapur Central Mandi",
+      ].map((name, i) => ({
+        _id: `centre-${i}`,
+        name,
+        district: i === 3 ? "Sitapur" : "Lucknow",
+        state: "Uttar Pradesh",
+        capacity: 12,
+        status: "Normal",
+        address: [
+          "Hardoi Road, Lucknow",
+          "Mohanlalganj, Lucknow",
+          "Malihabad, Lucknow",
+          "Station Road, Sitapur",
+        ][i],
+        latitude: 26.85 + i * 0.06,
+        longitude: 80.94 - i * 0.08,
+      })),
+    );
+    db.crops.push(
+      ...["Wheat", "Paddy", "Maize", "Mustard"].map((name, i) => ({
+        _id: name,
+        name,
+        price: [2425, 2369, 2225, 5950][i],
+      })),
+    );
+    const farmer = db.users[0];
+    db.farmers.push({
+      _id: id(),
+      userId: farmer._id,
+      farmerId: "EK-UP-10001",
+      village: "Malihabad",
+      district: farmer.district,
+      state: farmer.state,
+      verificationStatus: "VERIFIED",
+    });
+    db.notifications.push({
+      _id: id(),
+      farmerId: farmer._id,
+      title: "Welcome to e-Kharid",
+      message:
+        "Your digital procurement journey starts here. Book your first slot at a nearby centre.",
+      createdAt: new Date().toISOString(),
+      read: false,
+    });
+  });
+}
