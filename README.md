@@ -13,6 +13,8 @@ npm.cmd run dev
 
 Open **http://localhost:5173**. API: port 4000. Use `npm` instead of `npm.cmd` on other shells.
 
+**This workspace is configured to use the installed MongoDB 8.0 instance on port 27018**, with a dedicated `ekharid` replica set and database under `.data/mongo`. A local ignored `.env` selects it. To restart after closing the processes, run `powershell -ExecutionPolicy Bypass -File scripts/local-mongo.ps1` in one terminal and `npm.cmd run dev` in another. First-time replica-set initialization is `node scripts/init-local-mongo.mjs`. These scripts bind MongoDB to loopback only and do not use your existing default MongoDB database.
+
 Without environment configuration, a **labelled local demo** persists synthetic records in `.data/db.json`. It does not claim to use MongoDB. Four demo logins are prefilled. Their random password is generated locally in ignored `.data/demo-password` and exposed by `/api/config` **only in development demo mode**. Use synthetic information only. OTP codes are displayed in demo mode when email is not configured.
 
 Copy `.env.example` to `.env` for services. Never commit `.env`, `.data` or `uploads`. Backend secrets must not have a `VITE_` prefix.
