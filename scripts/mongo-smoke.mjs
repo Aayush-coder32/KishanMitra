@@ -5,7 +5,9 @@ import { initStore, mutate, read } from "../server/store.js";
 import { book } from "../server/domain.js";
 const replica = await MongoMemoryReplSet.create({
   replSet: { count: 1 },
-  binary: { downloadDir: ".data/mongodb-binaries" },
+  binary: process.env.MONGOMS_SYSTEM_BINARY
+    ? { systemBinary: process.env.MONGOMS_SYSTEM_BINARY }
+    : { downloadDir: ".data/mongodb-binaries" },
 });
 try {
   await initStore(replica.getUri());

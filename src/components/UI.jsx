@@ -103,17 +103,31 @@ export function Modal({ title, children, onClose }) {
   useEffect(() => {
     const previous = document.activeElement;
     const root = dialog.current;
-    root.querySelector('button, input, select, textarea, a[href]')?.focus();
+    root.querySelector("button, input, select, textarea, a[href]")?.focus();
     function keydown(event) {
-      if (event.key === 'Escape') close.current();
-      if (event.key !== 'Tab') return;
-      const focusable = [...root.querySelectorAll('button:not([disabled]), input:not([disabled]), select, textarea, a[href]')];
-      const first = focusable[0], last = focusable.at(-1);
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
-      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      if (event.key === "Escape") close.current();
+      if (event.key !== "Tab") return;
+      const focusable = [
+        ...root.querySelectorAll(
+          "button:not([disabled]), input:not([disabled]), select, textarea, a[href]",
+        ),
+      ];
+      const first = focusable[0],
+        last = focusable.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      }
+      if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
     }
-    document.addEventListener('keydown', keydown);
-    return () => { document.removeEventListener('keydown', keydown); previous?.focus(); };
+    document.addEventListener("keydown", keydown);
+    return () => {
+      document.removeEventListener("keydown", keydown);
+      previous?.focus();
+    };
   }, []);
   return (
     <div className="modal-backdrop" onClick={onClose}>

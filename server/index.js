@@ -22,7 +22,8 @@ import { seedActivity } from "./demo-activity.js";
 import { startDelivery } from "./notification-worker.js";
 const prod = process.env.NODE_ENV === "production",
   demo = !prod && process.env.DEMO_MODE !== "false";
-if (prod && !process.env.APP_ORIGIN?.startsWith('https://')) throw new Error('Production APP_ORIGIN must be an explicit HTTPS origin.');
+if (prod && !process.env.APP_ORIGIN?.startsWith("https://"))
+  throw new Error("Production APP_ORIGIN must be an explicit HTTPS origin.");
 if (
   prod &&
   (!process.env.MONGODB_URI ||
@@ -74,7 +75,16 @@ const app = express(),
   origin = process.env.APP_ORIGIN || "http://localhost:5173";
 const io = new Server(http, { cors: { origin, credentials: true } });
 app.set("trust proxy", 1);
-app.use(helmet({contentSecurityPolicy:{directives:{imgSrc:["'self'","data:","https://*.tile.openstreetmap.org"],connectSrc:["'self'"]}}}));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        imgSrc: ["'self'", "data:", "https://*.tile.openstreetmap.org"],
+        connectSrc: ["'self'"],
+      },
+    },
+  }),
+);
 app.use(cors({ origin, credentials: true }));
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
@@ -758,7 +768,17 @@ app.patch("/api/official/farmers/:id", roles("district"), async (req, res) => {
     );
     if (!u) fail(404, "Farmer not found.");
     const f = db.farmers.find((f) => f.userId === u._id);
-    if (!demo && ['Aadhaar Document','PAN Document','Signature'].some(type => !db.documents.some(d => d.farmerId === u._id && d.type === type))) fail(409,'Review the required identity documents and signature before verification.');
+    if (
+      !demo &&
+      ["Aadhaar Document", "PAN Document", "Signature"].some(
+        (type) =>
+          !db.documents.some((d) => d.farmerId === u._id && d.type === type),
+      )
+    )
+      fail(
+        409,
+        "Review the required identity documents and signature before verification.",
+      );
     f.verificationStatus = "VERIFIED";
     audit(db, req.user, "Farmer verified");
     notify(
@@ -951,18 +971,14 @@ app.use((err, req, res, next) => {
       : err instanceof multer.MulterError
         ? 400
         : err.status || 500;
-  res
-    .status(status)
-    .json({
-      message:
-        err instanceof z.ZodError
-          ? err.issues
-              .map((i) => `${i.path.join(".")}: ${i.message}`)
-              .join("; ")
-          : status === 500
-            ? "Something went wrong. Please try again."
-            : err.message,
-    });
+  res.status(status).json({
+    message:
+      err instanceof z.ZodError
+        ? err.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")
+        : status === 500
+          ? "Something went wrong. Please try again."
+          : err.message,
+  });
 });
 io.use(async (socket, next) => {
   try {
