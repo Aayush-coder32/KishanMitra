@@ -1,0 +1,11 @@
+import {ArrowUpRight, Inbox, LoaderCircle, X} from 'lucide-react';
+export function Badge({children}){const value=String(children||'Pending');return <span className={`badge ${/completed|verified|normal|active/i.test(value)?'green':/failed|cancelled|closed/i.test(value)?'red':'amber'}`}>{value.replaceAll('_',' ')}</span>;}
+export function Card({title,subtitle,children,action,className=''}){return <section className={`card ${className}`}><div className="card-heading"><div><h3>{title}</h3>{subtitle&&<p>{subtitle}</p>}</div>{action}</div>{children}</section>;}
+export function Empty({title='Nothing here yet',text='Your updates will appear here as you move through procurement.',action}){return <div className="empty"><Inbox size={30}/><h3>{title}</h3><p>{text}</p>{action}</div>;}
+export function Loading(){return <div className="empty"><LoaderCircle className="spin"/>Loading your workspace…</div>;}
+export function Field({label,children,...props}){return <label className="field"><span>{label}</span>{children||<input {...props}/>}</label>;}
+export function Stat({label,value,detail,icon:Icon,tone='green'}){return <div className="stat"><div className="stat-top"><span>{label}</span><span className={`stat-icon ${tone}`}><Icon size={20}/></span></div><strong>{value}</strong><small>{detail}</small></div>;}
+export function Table({columns,rows,empty}){return rows.length?<div className="table-wrap"><table><thead><tr>{columns.map(c=><th key={c.key}>{c.label}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={r._id||i}>{columns.map(c=><td key={c.key}>{c.render?c.render(r):r[c.key]??'—'}</td>)}</tr>)}</tbody></table></div>:<Empty title={empty||'No records yet'}/>;}
+export function Modal({title,children,onClose}){return <div className="modal-backdrop" onClick={onClose}><section className="modal" role="dialog" aria-modal="true" aria-label={title} onClick={e=>e.stopPropagation()}><div className="card-heading"><h2>{title}</h2><button className="icon-button" onClick={onClose} aria-label="Close"><X/></button></div>{children}</section></div>;}
+export const money=n=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(n||0);
+export const date=d=>d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';

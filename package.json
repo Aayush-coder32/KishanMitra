@@ -1,1 +1,54 @@
-{"name":"e-kharid","version":"1.0.0","private":true,"type":"module","scripts":{"dev":"concurrently -k \"npm:server\" \"npm:client\"","server":"node --watch server/index.js","client":"vite --host 0.0.0.0","build":"vite build","start":"node server/index.js","test":"node --test server/*.test.js"},"dependencies":{"@tailwindcss/vite":"^4.1.0","axios":"^1.8.0","bcryptjs":"^3.0.2","cookie-parser":"^1.4.7","cors":"^2.8.5","dotenv":"^16.5.0","express":"^5.1.0","express-rate-limit":"^7.5.0","helmet":"^8.1.0","jsonwebtoken":"^9.0.2","lucide-react":"^0.468.0","mongoose":"^8.13.0","multer":"^2.0.0","nodemailer":"^7.0.0","pdfkit":"^0.16.0","react":"^19.0.0","react-dom":"^19.0.0","react-router-dom":"^7.5.0","recharts":"^2.15.0","socket.io":"^4.8.1","socket.io-client":"^4.8.1","tailwindcss":"^4.1.0","zod":"^3.24.0","exceljs":"^4.4.0"},"devDependencies":{"@vitejs/plugin-react":"^4.4.0","concurrently":"^9.1.2","vite":"^6.2.0"}}
+{
+  "name": "e-kharid",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k \"npm:server\" \"npm:client\"",
+    "server": "node --watch server/index.js",
+    "client": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "start": "node server/index.js",
+    "test": "node --test server/*.test.js",
+    "test:api": "node scripts/smoke.mjs",
+    "test:browser": "node scripts/browser-smoke.mjs",
+    "admin:create": "node scripts/create-admin.mjs"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.0",
+    "axios": "^1.8.0",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "exceljs": "^4.4.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^0.468.0",
+    "mongoose": "^8.13.0",
+    "multer": "^2.0.0",
+    "nodemailer": "^10.0.10",
+    "pdfkit": "^0.16.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-leaflet": "^5.0.0",
+    "react-router-dom": "^7.5.0",
+    "recharts": "^2.15.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "tailwindcss": "^4.1.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@vitejs/plugin-react": "^4.4.0",
+    "concurrently": "^9.1.2",
+    "vite": "^6.2.0"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
+  }
+}
